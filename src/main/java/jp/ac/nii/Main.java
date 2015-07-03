@@ -9,6 +9,8 @@ import java.util.TreeMap;
 
 public class Main {
 	public static void main(String[] args) {
+		// 実行すると result.txt ファイルが作成されます。
+		// 最も出現頻度が高い単語は"in"で3回です。
 		MapReduce mapReduce = new MapReduce();
 		List<String> lines = new ArrayList<String>();
 		lines.add("Apache Hadoop is an open-source software framework written in Java for distributed storage and distributed processing of very large data sets on computer clusters built from commodity hardware. All the modules in Hadoop are designed with a fundamental assumption that hardware failures (of individual machines, or racks of machines) are commonplace and thus should be automatically handled in software by the framework.");
@@ -17,7 +19,14 @@ public class Main {
 }
 
 class MapReduce {
+	/**
+	 * KeyとValueのペアを記憶するためのフィールド。Keyで自動的にソートされる。
+	 */
 	private TreeMap<String, List<Integer>> keyValueMap;
+	
+	/**
+	 * reduce の結果を出力するためのフィールド。
+	 */
 	private PrintStream out;
 
 	public MapReduce() {
@@ -29,6 +38,10 @@ class MapReduce {
 		}
 	}
 
+	/**
+	 * MapReduce を開始します。
+	 * @param lines MapReduceの対象となるデータ。
+	 */
 	public void start(List<String> lines) {
 		map(lines);
 		for (Entry<String, List<Integer>> keyValue : keyValueMap.entrySet()) {
@@ -37,6 +50,7 @@ class MapReduce {
 	}
 
 	protected void map(List<String> lines) {
+		// emit を使ってワードカウントのMapを実装してください。
 		for (String line : lines) {
 			String[] words = line.split(" ");
 			for (String word : words) {
@@ -45,6 +59,20 @@ class MapReduce {
 		}
 	}
 
+	protected void reduce(String key, List<Integer> values) {
+		// write を使ってワードカウントのReduceを実装してください。
+		int sum = 0;
+		for (Integer value : values) {
+			sum += value;
+		}
+		write(key, sum);
+	}
+
+	/**
+	 * Mapの結果を出力します。
+	 * @param key キー
+	 * @param value バリュー
+	 */
 	protected void emit(String key, int value) {
 		if (!keyValueMap.containsKey(key)) {
 			keyValueMap.put(key, new ArrayList<Integer>());
@@ -53,14 +81,11 @@ class MapReduce {
 		list.add(value);
 	}
 
-	protected void reduce(String key, List<Integer> values) {
-		int sum = 0;
-		for (Integer value : values) {
-			sum += value;
-		}
-		write(key, sum);
-	}
-
+	/**
+	 * Reduceの結果を出力します。
+	 * @param key キー
+	 * @param value バリュー
+	 */
 	protected void write(String key, int value) {
 		out.println(key + "," + value);
 	}
