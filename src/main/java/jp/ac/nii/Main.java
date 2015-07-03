@@ -51,21 +51,10 @@ class MapReduce {
 
 	protected void map(List<String> lines) {
 		// emit を使ってワードカウントのMapを実装してください。
-		for (String line : lines) {
-			String[] words = line.split(" ");
-			for (String word : words) {
-				emit(word, 1);
-			}
-		}
 	}
 
 	protected void reduce(String key, List<Integer> values) {
 		// write を使ってワードカウントのReduceを実装してください。
-		int sum = 0;
-		for (Integer value : values) {
-			sum += value;
-		}
-		write(key, sum);
 	}
 
 	/**
