@@ -47,18 +47,6 @@ public class Job {
 		concatenateResult();
 	}
 
-	private ArrayList<Reducer> initializeReducers()
-			throws InstantiationException, IllegalAccessException,
-			FileNotFoundException {
-		ArrayList<Reducer> reducers = new ArrayList<Reducer>();
-		for (int i = 0; i < numberOfReducers; i++) {
-			Reducer reducer = reducerClass.newInstance();
-			reducer.setPrintStream(new PrintStream("result_" + i + ".csv"));
-			reducers.add(reducer);
-		}
-		return reducers;
-	}
-
 	private ArrayList<Mapper> initializeMappers(Shuffler shuffler,
 			int numberOfMappers) throws InstantiationException,
 			IllegalAccessException {
@@ -69,6 +57,18 @@ public class Job {
 			mappers.add(mapper);
 		}
 		return mappers;
+	}
+
+	private ArrayList<Reducer> initializeReducers()
+			throws InstantiationException, IllegalAccessException,
+			FileNotFoundException {
+		ArrayList<Reducer> reducers = new ArrayList<Reducer>();
+		for (int i = 0; i < numberOfReducers; i++) {
+			Reducer reducer = reducerClass.newInstance();
+			reducer.setPrintStream(new PrintStream("result_" + i + ".csv"));
+			reducers.add(reducer);
+		}
+		return reducers;
 	}
 
 	private void map(List<String> lines, ArrayList<Mapper> mappers) {
@@ -86,8 +86,7 @@ public class Job {
 		if (i + 1 == mappers.size()) {
 			to = lines.size();
 		}
-		List<String> subList = lines.subList(from, to);
-		return subList;
+		return lines.subList(from, to);
 	}
 
 	private void reduce(Shuffler shuffler, ArrayList<Reducer> reducers) {
