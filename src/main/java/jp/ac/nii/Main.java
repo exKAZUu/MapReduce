@@ -1,20 +1,32 @@
 package jp.ac.nii;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Scanner;
 import java.util.TreeMap;
 
 public class Main {
-	public static void main(String[] args) {
-		// 実行すると result.txt ファイルが作成されます。
-		// 最も出現頻度が高い単語は"in"で3回です。
+	public static void main(String[] args) throws FileNotFoundException {
+		// 実行すると result.csv ファイルが作成されます。
+		// 最も出現頻度が高い単語は"the"で793回です。
+		List<String> lines = readAliceText();
 		MapReduce mapReduce = new MapReduce();
-		List<String> lines = new ArrayList<String>();
-		lines.add("Apache Hadoop is an open-source software framework written in Java for distributed storage and distributed processing of very large data sets on computer clusters built from commodity hardware. All the modules in Hadoop are designed with a fundamental assumption that hardware failures (of individual machines, or racks of machines) are commonplace and thus should be automatically handled in software by the framework.");
 		mapReduce.start(lines);
+	}
+
+	private static List<String> readAliceText() throws FileNotFoundException {
+		FileInputStream inputStream = new FileInputStream("alice.txt");
+		Scanner scanner = new Scanner(inputStream);
+		List<String> lines = new ArrayList<String>();
+		while (scanner.hasNextLine()) {
+			lines.add(scanner.nextLine().toLowerCase());
+		}
+		scanner.close();
+		return lines;
 	}
 }
 
@@ -23,7 +35,7 @@ class MapReduce {
 	 * KeyとValueのペアを記憶するためのフィールド。Keyで自動的にソートされる。
 	 */
 	private TreeMap<String, List<Integer>> keyValueMap;
-	
+
 	/**
 	 * reduce の結果を出力するためのフィールド。
 	 */
@@ -32,7 +44,7 @@ class MapReduce {
 	public MapReduce() {
 		keyValueMap = new TreeMap<String, List<Integer>>();
 		try {
-			out = new PrintStream("result.txt");
+			out = new PrintStream("result.csv");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -40,7 +52,9 @@ class MapReduce {
 
 	/**
 	 * MapReduce を開始します。
-	 * @param lines MapReduceの対象となるデータ。
+	 * 
+	 * @param lines
+	 *            MapReduceの対象となるデータ。
 	 */
 	public void start(List<String> lines) {
 		map(lines);
@@ -54,7 +68,9 @@ class MapReduce {
 		for (String line : lines) {
 			String[] words = line.split(" ");
 			for (String word : words) {
-				emit(word, 1);
+				if (isWord(word)) {
+					emit(word, 1);
+				}
 			}
 		}
 	}
@@ -68,10 +84,22 @@ class MapReduce {
 		write(key, sum);
 	}
 
+	private boolean isWord(String word) {
+		for (int i = 0; i < word.length(); i++) {
+			if (!Character.isAlphabetic(word.charAt(i))) {
+				return false;
+			}
+		}
+		return word.length() > 0;
+	}
+
 	/**
 	 * Mapの結果を出力します。
-	 * @param key キー
-	 * @param value バリュー
+	 * 
+	 * @param key
+	 *            キー
+	 * @param value
+	 *            バリュー
 	 */
 	protected void emit(String key, int value) {
 		if (!keyValueMap.containsKey(key)) {
@@ -83,8 +111,11 @@ class MapReduce {
 
 	/**
 	 * Reduceの結果を出力します。
-	 * @param key キー
-	 * @param value バリュー
+	 * 
+	 * @param key
+	 *            キー
+	 * @param value
+	 *            バリュー
 	 */
 	protected void write(String key, int value) {
 		out.println(key + "," + value);
