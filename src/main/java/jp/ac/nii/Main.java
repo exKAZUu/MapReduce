@@ -18,6 +18,8 @@ public class Main {
 		mapReduce.setNumberOfLinesPerMapper(100);
 		mapReduce.setNumberOfReducers(5);
 		mapReduce.start(lines);
+		
+		
 	}
 
 	private static List<String> readAliceText() throws FileNotFoundException {

@@ -39,16 +39,22 @@ public class Job<Input, Key, Value> {
 				numberOfReducers);
 		int numberOfMappers = lines.size() / numberOfLinesPerMapper;
 
+		// 並列実行するために複数の Mapper と Reducer を生成する
 		ArrayList<Mapper<Input, Key, Value>> mappers = initializeMappers(
 				shuffler, numberOfMappers);
 		ArrayList<Reducer<Key, Value>> reducers = initializeReducers();
 
+		// Mapperでmapを実行してから、Reducerでreduceを実行する
 		map(lines, mappers);
-		reduce(shuffler, reducers);
+		reduceParallel(shuffler, reducers);
 
-		concatenateResult();
+		// Reducerの出力結果を一つのファイルにまとめる
+		mergeResult();
 	}
 
+	/**
+	 * 複数のMapperインスタンスを生成する。
+	 */
 	private ArrayList<Mapper<Input, Key, Value>> initializeMappers(
 			Shuffler<Key, Value> shuffler, int numberOfMappers)
 			throws InstantiationException, IllegalAccessException {
@@ -61,6 +67,9 @@ public class Job<Input, Key, Value> {
 		return mappers;
 	}
 
+	/**
+	 * 複数のReducerインスタンスを生成する。
+	 */
 	private ArrayList<Reducer<Key, Value>> initializeReducers()
 			throws InstantiationException, IllegalAccessException,
 			FileNotFoundException {
@@ -73,8 +82,15 @@ public class Job<Input, Key, Value> {
 		return reducers;
 	}
 
+	/**
+	/**
+	 * 複数のMapperのmapを並列に実行する。
+	 * @param lines 入力データ
+	 * @param mappers Mapperインスタンスのリスト
+	 */
 	private void map(List<Input> lines,
 			ArrayList<Mapper<Input, Key, Value>> mappers) {
+		// 簡単のため並列ではなく逐次実行する
 		for (int i = 0; i < mappers.size(); i++) {
 			List<Input> subList = splitLines(lines, mappers, i);
 			Mapper<Input, Key, Value> mapper = mappers.get(i);
@@ -82,6 +98,9 @@ public class Job<Input, Key, Value> {
 		}
 	}
 
+	/**
+	 * 入力データを分割する。
+	 */
 	private List<Input> splitLines(List<Input> lines,
 			ArrayList<Mapper<Input, Key, Value>> mappers, int i) {
 		int from = i * numberOfLinesPerMapper;
@@ -92,8 +111,14 @@ public class Job<Input, Key, Value> {
 		return lines.subList(from, to);
 	}
 
-	private void reduce(Shuffler<Key, Value> shuffler,
+	/**
+	 * 複数のReducerのreduceを並列に実行する。
+	 * @param shuffler Shuffler インスタンス
+	 * @param reducers Reducer インスタンスのリスト
+	 */
+	private void reduceParallel(Shuffler<Key, Value> shuffler,
 			ArrayList<Reducer<Key, Value>> reducers) {
+		// 簡単のため並列ではなく逐次実行する
 		for (int i = 0; i < reducers.size(); i++) {
 			Reducer<Key, Value> reducer = reducers.get(i);
 			TreeMap<Key, List<Value>> keyValueMap = shuffler.getKeyValueMaps()
@@ -105,7 +130,12 @@ public class Job<Input, Key, Value> {
 		}
 	}
 
-	private void concatenateResult() throws FileNotFoundException {
+	/**
+	 * 複数の result_X.csv ファイルを一つの result.csv にマージする。
+	 * 
+	 * @throws FileNotFoundException
+	 */
+	private void mergeResult() throws FileNotFoundException {
 		PrintStream out = new PrintStream("result.csv");
 		for (int i = 0; i < numberOfReducers; i++) {
 			FileInputStream intput = new FileInputStream("result_" + i + ".csv");
