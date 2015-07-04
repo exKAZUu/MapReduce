@@ -14,7 +14,7 @@ public class Main {
 		// 実行すると result.csv ファイルが作成されます。
 		// 最も出現頻度が高い単語は"the"で793回です。
 		List<String> lines = readAliceText();
-		MapReduce mapReduce = new MapReduce();
+		Job mapReduce = new Job();
 		mapReduce.start(lines);
 	}
 
@@ -30,7 +30,7 @@ public class Main {
 	}
 }
 
-class MapReduce {
+class Job {
 	/**
 	 * KeyとValueのペアを記憶するためのフィールド。Keyで自動的にソートされる。
 	 */
@@ -41,7 +41,7 @@ class MapReduce {
 	 */
 	private PrintStream out;
 
-	public MapReduce() {
+	public Job() {
 		keyValueMap = new TreeMap<String, List<Integer>>();
 		try {
 			out = new PrintStream("result.csv");
@@ -64,7 +64,6 @@ class MapReduce {
 	}
 
 	protected void map(List<String> lines) {
-		// emit と  isWord を使ってワードカウントのMapを実装してください。
 		for (String line : lines) {
 			String[] words = line.split(" ");
 			for (String word : words) {
@@ -76,7 +75,6 @@ class MapReduce {
 	}
 
 	protected void reduce(String key, List<Integer> values) {
-		// write を使ってワードカウントのReduceを実装してください。
 		int sum = 0;
 		for (Integer value : values) {
 			sum += value;
