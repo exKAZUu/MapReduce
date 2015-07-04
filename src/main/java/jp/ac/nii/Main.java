@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -21,8 +22,9 @@ public class Main {
 		mapReduce.setNumberOfLinesPerMapper(100);
 		mapReduce.setNumberOfReducers(5);
 		mapReduce.start(readTextFile("alice.txt"));
-		Files.copy(new File("result.csv").toPath(), new File(
-				"word_frequency.csv").toPath());
+		Files.copy(new File("result.csv").toPath(), 
+				new File("word_frequency.csv").toPath(),
+				StandardCopyOption.REPLACE_EXISTING);
 
 		// 次に、得られた出現頻度の結果 (word_frequency.csv) から、単語を構成する文字数と出現頻度を計算します。
 		// 例えば、1文字の単語の出現頻度は415回、2文字の単語の出現頻度は1814回になります。
