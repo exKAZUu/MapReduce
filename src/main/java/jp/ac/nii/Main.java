@@ -19,16 +19,12 @@ public class Main {
 		mapReduce.setNumberOfReducers(5);
 		mapReduce.start(readTextFile("alice.txt"));
 
-		// 次に、得られた出現頻度の結果から、単語を構成する文字数と出現頻度を計算します。
+		// 次に、得られた出現頻度の結果 (result.csv) から、単語を構成する文字数と出現頻度を計算します。
 		// 例えば、1文字の単語の出現頻度は415回、2文字の単語の出現頻度は1814回になります。
 		System.out.println();
 		System.out.println("-------- Second Stage --------");
-		Job<String, Integer, Integer> mapReduce2 = new Job<String, Integer, Integer>();
-		mapReduce2.setMapper(WordLengthCountMapper.class);
-		mapReduce2.setReducer(WordLengthCountReducer.class);
-		mapReduce2.setNumberOfLinesPerMapper(100);
-		mapReduce2.setNumberOfReducers(5);
-		mapReduce2.start(readTextFile("result.csv"));
+		// TODO: 新しいジョブを作成して実行してください。
+		// ただし、 WordLengthCountMapper と WordLengthCountReducer を使ってください。
 	}
 
 	private static List<String> readTextFile(String fileName)
