@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -33,13 +32,13 @@ public class Main {
 		mapReduce2.setReducer(NumeratorCalcReducer.class);
 		mapReduce2.setNumberOfLinesPerMapper(100);
 		mapReduce2.setNumberOfReducers(5);
-		mapReduce.start(readTextFile("goods_pair.csv"));
+		mapReduce2.start(readTextFile("goods_pair.csv"));
 		Files.copy(new File("result.csv").toPath(),
 				new File("numerator.csv").toPath(),
 				StandardCopyOption.REPLACE_EXISTING);
 
 		System.out.println();
-		System.out.println("-------- Second Stage --------");
+		System.out.println("-------- Third Stage --------");
 		Job<String, String, String> mapReduce3 = new Job<String, String, String>();
 		mapReduce3.setMapper(AssociationCalcMapper.class);
 		mapReduce3.setReducer(AssociationCalcReducer.class);
@@ -66,7 +65,7 @@ public class Main {
 	private static List<String> readTextFile(String fileName)
 			throws FileNotFoundException {
 		FileInputStream inputStream = new FileInputStream(fileName);
-		Scanner scanner = new Scanner(inputStream);
+		Scanner scanner = new Scanner(inputStream, "SJIS");
 		List<String> lines = new ArrayList<String>();
 		while (scanner.hasNextLine()) {
 			lines.add(scanner.nextLine().toLowerCase());

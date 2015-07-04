@@ -3,6 +3,7 @@ package jp.ac.nii;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -28,9 +29,11 @@ public class Job<Input, Key, Value> {
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 * @throws FileNotFoundException
+	 * @throws UnsupportedEncodingException
 	 */
 	public void start(List<Input> lines) throws InstantiationException,
-			IllegalAccessException, FileNotFoundException {
+			IllegalAccessException, FileNotFoundException,
+			UnsupportedEncodingException {
 		if (mapperClass == null || reducerClass == null
 				|| numberOfLinesPerMapper <= 0 || numberOfReducers <= 0) {
 			throw new RuntimeException(
@@ -81,14 +84,17 @@ public class Job<Input, Key, Value> {
 
 	/**
 	 * 複数のReducerインスタンスを生成する。
+	 * 
+	 * @throws UnsupportedEncodingException
 	 */
 	private ArrayList<Reducer<Key, Value>> initializeReducers()
 			throws InstantiationException, IllegalAccessException,
-			FileNotFoundException {
+			FileNotFoundException, UnsupportedEncodingException {
 		ArrayList<Reducer<Key, Value>> reducers = new ArrayList<Reducer<Key, Value>>();
 		for (int i = 0; i < numberOfReducers; i++) {
 			Reducer<Key, Value> reducer = reducerClass.newInstance();
-			reducer.setPrintStream(new PrintStream("result_" + i + ".csv"));
+			reducer.setPrintStream(new PrintStream("result_" + i + ".csv",
+					"SJIS"));
 			reducers.add(reducer);
 		}
 		System.out.println("# Reducers: " + reducers.size());
@@ -138,7 +144,8 @@ public class Job<Input, Key, Value> {
 			Reducer<Key, Value> reducer = reducers.get(i);
 			TreeMap<Key, List<Value>> keyValueMap = shuffler.getKeyValueMaps()
 					.get(i);
-			System.out.println("Reducer " + i + " will process " + keyValueMap.size() + " records.");
+			System.out.println("Reducer " + i + " will process "
+					+ keyValueMap.size() + " records.");
 			for (Entry<Key, List<Value>> keyValue : keyValueMap.entrySet()) {
 				reducer.reduce(keyValue.getKey(), keyValue.getValue());
 			}
@@ -150,12 +157,14 @@ public class Job<Input, Key, Value> {
 	 * 複数の result_X.csv ファイルを一つの result.csv にマージする。
 	 * 
 	 * @throws FileNotFoundException
+	 * @throws UnsupportedEncodingException
 	 */
-	private void mergeResult() throws FileNotFoundException {
-		PrintStream out = new PrintStream("result.csv");
+	private void mergeResult() throws FileNotFoundException,
+			UnsupportedEncodingException {
+		PrintStream out = new PrintStream("result.csv", "SJIS");
 		for (int i = 0; i < numberOfReducers; i++) {
 			FileInputStream intput = new FileInputStream("result_" + i + ".csv");
-			Scanner scanner = new Scanner(intput);
+			Scanner scanner = new Scanner(intput, "SJIS");
 			while (scanner.hasNextLine()) {
 				out.println(scanner.nextLine());
 			}
