@@ -36,7 +36,11 @@ public class Job {
 		}
 
 		Shuffler shuffler = new Shuffler(numberOfReducers);
-		int numberOfMappers = /* TODO: numberOfLinesPerMapper で計算してください。 */;
+		
+		// TODO: numberOfLinesPerMapper を使って numberOfMappers を計算してください。
+		// なお、1つのMapperが扱う行数は numberOfLinesPerMapper を超えてはいけません。
+		// つまり、端数が出た場合は、Mapperの数を1つ増やしてください。
+		int numberOfMappers;
 
 		// 並列実行するために複数の Mapper と Reducer を生成する
 		ArrayList<Mapper> mappers = initializeMappers(shuffler, numberOfMappers);
@@ -97,10 +101,7 @@ public class Job {
 	private List<String> splitLines(List<String> lines,
 			ArrayList<Mapper> mappers, int i) {
 		int from = i * numberOfLinesPerMapper;
-		int to = from + numberOfLinesPerMapper;
-		if (i + 1 == mappers.size()) {
-			to = lines.size();
-		}
+		int to = Math.min(from + numberOfLinesPerMapper, lines.size());
 		return lines.subList(from, to);
 	}
 
