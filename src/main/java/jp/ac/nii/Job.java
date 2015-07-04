@@ -12,10 +12,12 @@ import java.util.TreeMap;
 public class Job<Input, Key, Value> {
 	private Class<? extends Mapper<Input, Key, Value>> mapperClass;
 	private Class<? extends Reducer<Key, Value>> reducerClass;
+	private Class<? extends Partitioner<Key, Value>> partitionerClass;
 	private int numberOfLinesPerMapper;
 	private int numberOfReducers;
 
 	public Job() {
+		partitionerClass = null;
 	}
 
 	/**
@@ -35,7 +37,13 @@ public class Job<Input, Key, Value> {
 					"MapReduce does not be correctly initialized.");
 		}
 
-		Shuffler<Key, Value> shuffler = new Shuffler<Key, Value>(
+		Partitioner<Key, Value> partitioner;
+		if (partitionerClass == null) {
+			partitioner = new Partitioner<Key, Value>();
+		} else {
+			partitioner = partitionerClass.newInstance();
+		}
+		Shuffler<Key, Value> shuffler = new Shuffler<Key, Value>(partitioner,
 				numberOfReducers);
 		int numberOfMappers = lines.size() / numberOfLinesPerMapper;
 		if (lines.size() % numberOfLinesPerMapper != 0) {
@@ -67,6 +75,7 @@ public class Job<Input, Key, Value> {
 			mapper.setShuffler(shuffler);
 			mappers.add(mapper);
 		}
+		System.out.println("# Mappers: " + mappers.size());
 		return mappers;
 	}
 
@@ -82,6 +91,7 @@ public class Job<Input, Key, Value> {
 			reducer.setPrintStream(new PrintStream("result_" + i + ".csv"));
 			reducers.add(reducer);
 		}
+		System.out.println("# Reducers: " + reducers.size());
 		return reducers;
 	}
 
@@ -128,6 +138,7 @@ public class Job<Input, Key, Value> {
 			Reducer<Key, Value> reducer = reducers.get(i);
 			TreeMap<Key, List<Value>> keyValueMap = shuffler.getKeyValueMaps()
 					.get(i);
+			System.out.println("Reducer " + i + " will process " + keyValueMap.size() + " records.");
 			for (Entry<Key, List<Value>> keyValue : keyValueMap.entrySet()) {
 				reducer.reduce(keyValue.getKey(), keyValue.getValue());
 			}
@@ -159,6 +170,11 @@ public class Job<Input, Key, Value> {
 
 	public void setReducer(Class<? extends Reducer<Key, Value>> reducerClass) {
 		this.reducerClass = reducerClass;
+	}
+
+	public void setPartitioner(
+			Class<? extends Partitioner<Key, Value>> partitionerClass) {
+		this.partitionerClass = partitionerClass;
 	}
 
 	public void setNumberOfLinesPerMapper(int numberOfLinesPerMapper) {

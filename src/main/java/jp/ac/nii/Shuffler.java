@@ -5,10 +5,12 @@ import java.util.List;
 import java.util.TreeMap;
 
 public class Shuffler<Key, Value> {
-	private List<TreeMap<Key, List<Value>>> keyValueMaps;
-	private int numberOfReducers;
+	private final List<TreeMap<Key, List<Value>>> keyValueMaps;
+	private final Partitioner<Key, Value> partitioner;
+	private final int numberOfReducers;
 
-	public Shuffler(int numberOfReducers) {
+	public Shuffler(Partitioner<Key, Value> partitioner, int numberOfReducers) {
+		this.partitioner = partitioner;
 		this.numberOfReducers = numberOfReducers;
 		keyValueMaps = new ArrayList<TreeMap<Key, List<Value>>>();
 		for (int i = 0; i < numberOfReducers; i++) {
@@ -18,7 +20,7 @@ public class Shuffler<Key, Value> {
 
 	public void shuffleAndSort(Key key, Value value) {
 		// 何番目のReducerにKeyとValueのペアを送るか決める
-		int index = getPartition(key, value, numberOfReducers);
+		int index = partitioner.getPartition(key, value, numberOfReducers);
 		TreeMap<Key, List<Value>> keyValueMap = keyValueMaps.get(index);
 
 		if (!keyValueMap.containsKey(key)) {
@@ -26,21 +28,6 @@ public class Shuffler<Key, Value> {
 		}
 		List<Value> list = keyValueMap.get(key);
 		list.add(value);
-	}
-
-	/**
-	 * 何番目のReducerにKeyとValueのペアを送るか決めます。
-	 * 
-	 * @param key
-	 *            キー
-	 * @param value
-	 *            バリュー
-	 * @param numberOfReducers
-	 *            Reducerの個数
-	 * @return Reducerのインデックス
-	 */
-	protected int getPartition(Key key, Value value, int numberOfReducers) {
-		return Math.abs(key.hashCode()) % numberOfReducers;
 	}
 
 	public List<TreeMap<Key, List<Value>>> getKeyValueMaps() {

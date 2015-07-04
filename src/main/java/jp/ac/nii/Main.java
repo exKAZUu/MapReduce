@@ -12,12 +12,24 @@ public class Main {
 		// 実行すると result.csv ファイルが作成されます。
 		// 最も出現頻度が高い単語は"the"で793回です。
 		List<String> lines = readAliceText();
+
+		System.out.println("--------Default Partitioner--------");
 		Job<String, String, Integer> mapReduce = new Job<String, String, Integer>();
 		mapReduce.setMapper(WordCountMapper.class);
 		mapReduce.setReducer(WordCountReducer.class);
 		mapReduce.setNumberOfLinesPerMapper(100);
 		mapReduce.setNumberOfReducers(5);
 		mapReduce.start(lines);
+
+		System.out.println();
+		System.out.println("--------Original Partitioner--------");
+		Job<String, String, Integer> mapReduceWithPartitioner = new Job<String, String, Integer>();
+		mapReduceWithPartitioner.setMapper(WordCountMapper.class);
+		mapReduceWithPartitioner.setReducer(WordCountReducer.class);
+		mapReduceWithPartitioner.setPartitioner(WordCountPartitioner.class);
+		mapReduceWithPartitioner.setNumberOfLinesPerMapper(100);
+		mapReduceWithPartitioner.setNumberOfReducers(5);
+		mapReduceWithPartitioner.start(lines);
 	}
 
 	private static List<String> readAliceText() throws FileNotFoundException {
