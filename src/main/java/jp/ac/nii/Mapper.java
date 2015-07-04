@@ -6,7 +6,6 @@ public class Mapper {
 	private Shuffler shuffler;
 
 	public void map(List<String> lines) {
-		// emit と isWord を使ってワードカウントのMapを実装してください。
 		for (String line : lines) {
 			String[] words = line.split(" ");
 			for (String word : words) {
