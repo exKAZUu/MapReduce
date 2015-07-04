@@ -36,7 +36,7 @@ public class Job {
 		}
 
 		Shuffler shuffler = new Shuffler(numberOfReducers);
-		int numberOfMappers = lines.size() / numberOfLinesPerMapper;
+		int numberOfMappers = /* TODO: numberOfLinesPerMapper で計算してください。 */;
 
 		ArrayList<Mapper> mappers = initializeMappers(shuffler, numberOfMappers);
 		ArrayList<Reducer> reducers = initializeReducers();
@@ -45,6 +45,14 @@ public class Job {
 		reduce(shuffler, reducers);
 
 		concatenateResult();
+	}
+
+	private ArrayList<Mapper> initializeMappers(Shuffler shuffler,
+			int numberOfMappers) throws InstantiationException,
+			IllegalAccessException {
+		// TODO: initializeReducers を参考に実装してください。
+		// ただし、reducer.setPrintStream の代わりに、 mapper.setShuffler を呼ぶこと。
+		return null;	// TODO: この行は削除すること
 	}
 
 	private ArrayList<Reducer> initializeReducers()
@@ -59,23 +67,10 @@ public class Job {
 		return reducers;
 	}
 
-	private ArrayList<Mapper> initializeMappers(Shuffler shuffler,
-			int numberOfMappers) throws InstantiationException,
-			IllegalAccessException {
-		ArrayList<Mapper> mappers = new ArrayList<Mapper>();
-		for (int i = 0; i < numberOfMappers; i++) {
-			Mapper mapper = mapperClass.newInstance();
-			mapper.setShuffler(shuffler);
-			mappers.add(mapper);
-		}
-		return mappers;
-	}
-
 	private void map(List<String> lines, ArrayList<Mapper> mappers) {
 		for (int i = 0; i < mappers.size(); i++) {
 			List<String> subList = splitLines(lines, mappers, i);
-			Mapper mapper = mappers.get(i);
-			mapper.map(subList);
+			// TODO: mapper に subList を渡して、mapを実行してください。
 		}
 	}
 
@@ -86,8 +81,7 @@ public class Job {
 		if (i + 1 == mappers.size()) {
 			to = lines.size();
 		}
-		List<String> subList = lines.subList(from, to);
-		return subList;
+		return lines.subList(from, to);
 	}
 
 	private void reduce(Shuffler shuffler, ArrayList<Reducer> reducers) {
@@ -106,11 +100,8 @@ public class Job {
 		PrintStream out = new PrintStream("result.csv");
 		for (int i = 0; i < numberOfReducers; i++) {
 			FileInputStream intput = new FileInputStream("result_" + i + ".csv");
-			Scanner scanner = new Scanner(intput);
-			while (scanner.hasNextLine()) {
-				out.println(scanner.nextLine());
-			}
-			scanner.close();
+			// TODO: Main.readAliceText() を参考に result_X.csv を result.csv に結合するコードを記述する。
+			// 単純に複数のファイルの中身を一つのファイルに結合するだけでよいです。
 		}
 		out.close();
 	}
