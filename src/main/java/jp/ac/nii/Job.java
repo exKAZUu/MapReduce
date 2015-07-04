@@ -67,6 +67,7 @@ public class Job<Input, Key, Value> {
 			mapper.setShuffler(shuffler);
 			mappers.add(mapper);
 		}
+		System.out.println("# Mappers: " + mappers.size());
 		return mappers;
 	}
 
@@ -82,6 +83,7 @@ public class Job<Input, Key, Value> {
 			reducer.setPrintStream(new PrintStream("result_" + i + ".csv"));
 			reducers.add(reducer);
 		}
+		System.out.println("# Reducers: " + reducers.size());
 		return reducers;
 	}
 
@@ -128,6 +130,8 @@ public class Job<Input, Key, Value> {
 			Reducer<Key, Value> reducer = reducers.get(i);
 			TreeMap<Key, List<Value>> keyValueMap = shuffler.getKeyValueMaps()
 					.get(i);
+			System.out.println("Reducer " + i + " will process "
+					+ keyValueMap.size() + " records.");
 			for (Entry<Key, List<Value>> keyValue : keyValueMap.entrySet()) {
 				reducer.reduce(keyValue.getKey(), keyValue.getValue());
 			}
