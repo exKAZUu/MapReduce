@@ -3,17 +3,10 @@ package jp.ac.nii;
 import java.io.PrintStream;
 import java.util.List;
 
-public class Reducer {
+public abstract class Reducer<Key, Value> {
 	private PrintStream out;
 
-	protected void reduce(String key, List<Integer> values) {
-		// write を使ってワードカウントのReduceを実装してください。
-		int sum = 0;
-		for (Integer value : values) {
-			sum += value;
-		}
-		write(key, sum);
-	}
+	protected abstract void reduce(Key key, List<Value> values);
 
 	/**
 	 * Reduceの結果を出力します。
@@ -23,15 +16,15 @@ public class Reducer {
 	 * @param value
 	 *            バリュー
 	 */
-	protected void write(String key, int value) {
+	protected final void write(Object key, Object value) {
 		out.println(key + "," + value);
 	}
 
-	public void finish() {
+	protected final void finish() {
 		out.close();
 	}
 
-	public void setPrintStream(PrintStream out) {
+	protected final void setPrintStream(PrintStream out) {
 		this.out = out;
 	}
 }

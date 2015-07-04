@@ -2,29 +2,10 @@ package jp.ac.nii;
 
 import java.util.List;
 
-public class Mapper {
-	private Shuffler shuffler;
+public abstract class Mapper<Input, Key, Value> {
+	private Shuffler<Key, Value> shuffler;
 
-	public void map(List<String> lines) {
-		// emit と isWord を使ってワードカウントのMapを実装してください。
-		for (String line : lines) {
-			String[] words = line.split(" ");
-			for (String word : words) {
-				if (isWord(word)) {
-					emit(word, 1);
-				}
-			}
-		}
-	}
-
-	private boolean isWord(String word) {
-		for (int i = 0; i < word.length(); i++) {
-			if (!Character.isAlphabetic(word.charAt(i))) {
-				return false;
-			}
-		}
-		return word.length() > 0;
-	}
+	protected abstract void map(List<Input> lines);
 
 	/**
 	 * Mapの結果を出力します。
@@ -34,11 +15,11 @@ public class Mapper {
 	 * @param value
 	 *            バリュー
 	 */
-	protected void emit(String key, int value) {
+	protected final void emit(Key key, Value value) {
 		shuffler.shuffleAndSort(key, value);
 	}
 
-	public void setShuffler(Shuffler shuffler) {
+	protected final void setShuffler(Shuffler<Key, Value> shuffler) {
 		this.shuffler = shuffler;
 	}
 }
