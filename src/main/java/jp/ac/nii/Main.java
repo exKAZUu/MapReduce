@@ -78,8 +78,7 @@ public class Main {
 			lines.add(newLine);
 		}
 		for (String line : numeratorLines) {
-			String newLine = "N" + line;
-			lines.add(newLine);
+			// TODO: denominatorLinesを参考に記述してください。
 		}
 		mapReduce3.start(lines);
 		Files.copy(new File("result.csv").toPath(),
