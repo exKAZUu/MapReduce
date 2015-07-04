@@ -38,6 +38,9 @@ public class Job<Input, Key, Value> {
 		Shuffler<Key, Value> shuffler = new Shuffler<Key, Value>(
 				numberOfReducers);
 		int numberOfMappers = lines.size() / numberOfLinesPerMapper;
+		if (lines.size() % numberOfLinesPerMapper != 0) {
+			numberOfMappers++;
+		}
 
 		// 並列実行するために複数の Mapper と Reducer を生成する
 		ArrayList<Mapper<Input, Key, Value>> mappers = initializeMappers(
@@ -45,7 +48,7 @@ public class Job<Input, Key, Value> {
 		ArrayList<Reducer<Key, Value>> reducers = initializeReducers();
 
 		// Mapperでmapを実行してから、Reducerでreduceを実行する
-		map(lines, mappers);
+		mapParallel(lines, mappers);
 		reduceParallel(shuffler, reducers);
 
 		// Reducerの出力結果を一つのファイルにまとめる
@@ -83,12 +86,14 @@ public class Job<Input, Key, Value> {
 	}
 
 	/**
-	/**
 	 * 複数のMapperのmapを並列に実行する。
-	 * @param lines 入力データ
-	 * @param mappers Mapperインスタンスのリスト
+	 * 
+	 * @param lines
+	 *            入力データ
+	 * @param mappers
+	 *            Mapperインスタンスのリスト
 	 */
-	private void map(List<Input> lines,
+	private void mapParallel(List<Input> lines,
 			ArrayList<Mapper<Input, Key, Value>> mappers) {
 		// 簡単のため並列ではなく逐次実行する
 		for (int i = 0; i < mappers.size(); i++) {
@@ -104,17 +109,17 @@ public class Job<Input, Key, Value> {
 	private List<Input> splitLines(List<Input> lines,
 			ArrayList<Mapper<Input, Key, Value>> mappers, int i) {
 		int from = i * numberOfLinesPerMapper;
-		int to = from + numberOfLinesPerMapper;
-		if (i + 1 == mappers.size()) {
-			to = lines.size();
-		}
+		int to = Math.min(from + numberOfLinesPerMapper, lines.size());
 		return lines.subList(from, to);
 	}
 
 	/**
 	 * 複数のReducerのreduceを並列に実行する。
-	 * @param shuffler Shuffler インスタンス
-	 * @param reducers Reducer インスタンスのリスト
+	 * 
+	 * @param shuffler
+	 *            Shuffler インスタンス
+	 * @param reducers
+	 *            Reducer インスタンスのリスト
 	 */
 	private void reduceParallel(Shuffler<Key, Value> shuffler,
 			ArrayList<Reducer<Key, Value>> reducers) {
