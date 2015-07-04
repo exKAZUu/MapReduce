@@ -37,29 +37,60 @@ public class Job {
 
 		Shuffler shuffler = new Shuffler(numberOfReducers);
 		int numberOfMappers = lines.size() / numberOfLinesPerMapper;
-		ArrayList<Mapper> mappers = new ArrayList<Mapper>();
-		for (int i = 0; i < numberOfMappers; i++) {
-			Mapper mapper = mapperClass.newInstance();
-			mapper.setShuffler(shuffler);
-			mappers.add(mapper);
-		}
 
+		ArrayList<Mapper> mappers = initializeMappers(shuffler, numberOfMappers);
+		ArrayList<Reducer> reducers = initializeReducers();
+
+		map(lines, mappers);
+		reduce(shuffler, reducers);
+
+		concatenateResult();
+	}
+
+	private ArrayList<Reducer> initializeReducers()
+			throws InstantiationException, IllegalAccessException,
+			FileNotFoundException {
 		ArrayList<Reducer> reducers = new ArrayList<Reducer>();
 		for (int i = 0; i < numberOfReducers; i++) {
 			Reducer reducer = reducerClass.newInstance();
 			reducer.setPrintStream(new PrintStream("result_" + i + ".csv"));
 			reducers.add(reducer);
 		}
+		return reducers;
+	}
 
-		for (int i = 0; i < mappers.size(); i++) {
-			int from = i * numberOfLinesPerMapper;
-			int to = from + numberOfLinesPerMapper;
-			if (i + 1 == mappers.size()) {
-				to = lines.size();
-			}
-			Mapper mapper = mappers.get(i);
-			mapper.map(lines.subList(from, to));
+	private ArrayList<Mapper> initializeMappers(Shuffler shuffler,
+			int numberOfMappers) throws InstantiationException,
+			IllegalAccessException {
+		ArrayList<Mapper> mappers = new ArrayList<Mapper>();
+		for (int i = 0; i < numberOfMappers; i++) {
+			Mapper mapper = mapperClass.newInstance();
+			mapper.setShuffler(shuffler);
+			mappers.add(mapper);
 		}
+		return mappers;
+	}
+
+	private void map(List<String> lines, ArrayList<Mapper> mappers) {
+		for (int i = 0; i < mappers.size(); i++) {
+			List<String> subList = splitLines(lines, mappers, i);
+			Mapper mapper = mappers.get(i);
+			mapper.map(subList);
+		}
+	}
+
+	private List<String> splitLines(List<String> lines,
+			ArrayList<Mapper> mappers, int i) {
+		int from = i * numberOfLinesPerMapper;
+		int to = from + numberOfLinesPerMapper;
+		if (i + 1 == mappers.size()) {
+			to = lines.size();
+		}
+		List<String> subList = lines.subList(from, to);
+		return subList;
+	}
+
+	private void reduce(Shuffler shuffler, ArrayList<Reducer> reducers) {
 		for (int i = 0; i < reducers.size(); i++) {
 			Reducer reducer = reducers.get(i);
 			TreeMap<String, List<Integer>> keyValueMap = shuffler
@@ -69,8 +100,6 @@ public class Job {
 			}
 			reducer.finish();
 		}
-
-		concatenateResult();
 	}
 
 	private void concatenateResult() throws FileNotFoundException {
