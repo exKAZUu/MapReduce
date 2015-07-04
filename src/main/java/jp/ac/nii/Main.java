@@ -64,11 +64,11 @@ class MapReduce {
 	}
 
 	protected void map(List<String> lines) {
-		// emit と  isWord を使ってワードカウントのMapを実装してください。
+		// TODO: emit と  isWord を使ってワードカウントのMapを実装してください。
 	}
 
 	protected void reduce(String key, List<Integer> values) {
-		// write を使ってワードカウントのReduceを実装してください。
+		// TODO: write を使ってワードカウントのReduceを実装してください。
 	}
 
 	private boolean isWord(String word) {
