@@ -1,106 +1,33 @@
 package jp.ac.nii;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.TreeMap;
+import java.util.Scanner;
 
 public class Main {
-	public static void main(String[] args) {
-		// 実行すると result.txt ファイルが作成されます。
-		// 最も出現頻度が高い単語は"in"で3回です。
-		MapReduce mapReduce = new MapReduce();
+	public static void main(String[] args) throws FileNotFoundException,
+			InstantiationException, IllegalAccessException {
+		// 実行すると result.csv ファイルが作成されます。
+		// 最も出現頻度が高い単語は"the"で793回です。
+		List<String> lines = readAliceText();
+		Job mapReduce = new Job();
+		mapReduce.setMapper(Mapper.class);
+		mapReduce.setReducer(Reducer.class);
+		mapReduce.setNumberOfLinesPerMapper(100);
+		mapReduce.setNumberOfReducers(5);
+		mapReduce.start(lines);
+	}
+
+	private static List<String> readAliceText() throws FileNotFoundException {
+		FileInputStream inputStream = new FileInputStream("alice.txt");
+		Scanner scanner = new Scanner(inputStream);
 		List<String> lines = new ArrayList<String>();
-		lines.add("Apache Hadoop is an open-source software framework written in Java for distributed storage and distributed processing of very large data sets on computer clusters built from commodity hardware. All the modules in Hadoop are designed with a fundamental assumption that hardware failures (of individual machines, or racks of machines) are commonplace and thus should be automatically handled in software by the framework.");
-		mapReduce.start(lines, 10, 5, );
-	}
-}
-
-class Mapper {
-	protected void map(List<String> lines) {
-		// emit を使ってワードカウントのMapを実装してください。
-		for (String line : lines) {
-			String[] words = line.split(" ");
-			for (String word : words) {
-				emit(word, 1);
-			}
+		while (scanner.hasNextLine()) {
+			lines.add(scanner.nextLine().toLowerCase());
 		}
-	}	
-
-	/**
-	 * Mapの結果を出力します。
-	 * @param key キー
-	 * @param value バリュー
-	 */
-	protected void emit(String key, int value) {
-		if (!keyValueMap.containsKey(key)) {
-			keyValueMap.put(key, new ArrayList<Integer>());
-		}
-		List<Integer> list = keyValueMap.get(key);
-		list.add(value);
+		scanner.close();
+		return lines;
 	}
-}
-
-class Shuffle {
-	public 
-	
-	protected int getPartition(String key, Integer value, int numPartitions) {
-		return key.hashCode() % numPartitions;
-	}
-}
-
-class Reducer {
-	protected void reduce(String key, List<Integer> values) {
-		// write を使ってワードカウントのReduceを実装してください。
-		int sum = 0;
-		for (Integer value : values) {
-			sum += value;
-		}
-		write(key, sum);
-	}
-
-	/**
-	 * Reduceの結果を出力します。
-	 * @param key キー
-	 * @param value バリュー
-	 */
-	protected void write(String key, int value) {
-		out.println(key + "," + value);
-	}	
-}
-
-class MapReduce {
-	/**
-	 * KeyとValueのペアを記憶するためのフィールド。Keyで自動的にソートされる。
-	 */
-	private TreeMap<String, List<Integer>> keyValueMap;
-	
-	/**
-	 * reduce の結果を出力するためのフィールド。
-	 */
-	private PrintStream out;
-
-	public MapReduce() {
-		keyValueMap = new TreeMap<String, List<Integer>>();
-		try {
-			out = new PrintStream("result.txt");
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * MapReduce を開始します。
-	 * @param lines MapReduceの対象となるデータ。
-	 */
-	public void start(List<String> lines, int lineCountPerMapper, int numReducers) {
-		map(lines);
-		for (Entry<String, List<Integer>> keyValue : keyValueMap.entrySet()) {
-			reduce(keyValue.getKey(), keyValue.getValue());
-		}
-	}
-
-
 }
